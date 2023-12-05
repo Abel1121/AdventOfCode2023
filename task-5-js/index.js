@@ -5,6 +5,7 @@ const data = input.replaceAll('\r', '').split("\n");
 const seeds = data[0].split(' ').slice(1)
 const separate = [];
 let localization = [];
+let minLocalization= null;
 function separat(data)  {
     let array = []
     data.map(item => {
@@ -27,10 +28,32 @@ const transfer = (data, index) => {
             if(!+local[`${names[index+1]}`]) {
                 return local[`${names[index+1]}`] = +local[`${names[index]}`]
             }
+            if (!minLocalization || local['location'] < minLocalization['location']) {
+                minLocalization = local;
+            }
         })
     })
 }
+const transfer2 = (data, index, howManyLoop, position) => {
+    const datas = data.map(item => item.split(' '))
+    for (let i= 0; i < howManyLoop; i++) {
+        const local = localization[position-1]['seed'] + i*1000
+        console.log('local1', local)
+        datas.map(item => {
+            if ((+item[1] + +item[2]) > +local[`${names[index]}`] && +local[`${names[index]}`] >= +item[1]) {
+                return local[`${names[index + 1]}`] = (+local[`${names[index]}`] + (Number(item[0]) - Number(item[1])))
+            }
+            if (!+local[`${names[index + 1]}`]) {
+                return local[`${names[index + 1]}`] = +local[`${names[index]}`]
+            }
+            if (!minLocalization || local['location'] < minLocalization['location']) {
+                minLocalization = local
+            }
 
+            //console.log('local', local, minLocalization, local['location'], minLocalization['location'], local['location'] < minLocalization['location'])
+        })
+    }
+}
 function part1() {
     separat(data.slice(2))
     localization = seeds.map(item => { return {'seed': +item}})
@@ -38,36 +61,28 @@ function part1() {
     for (let i= 0; i < separate.length; i++) {
         transfer(separate[i], i)
     }
-    const min = Math.min(...localization.map(item => item['location']))
-    console.log('finalNumber part1', min)
 
+    console.log('finalNumber part1', minLocalization['location'] )
 }
-// function part2() {
-//     console.log('start0')
-//
-//     separat(data.slice(2))
-//     console.log('start1')
-//     const loc2 = []
-//     for (let i= 0; i <= seeds.length; i+=2) {
-//         let loc = []
-//         for (let j = 0; j < seeds[i+1]; j++) {
-//             loc.push({'seed': +seeds[i]+j})
-//
-//         }
-//         loc2.push(...loc)
-//         loc=[];
-//     }
-//     console.log('first for end')
-//     // console.log('localization', localization, localization.length)
-//     for (let i= 0; i < separate.length; i++) {
-//         transfer(separate[i], i, loc2)
-//     }
-//     console.log('2nd for end')
-//
-//     const min = Math.min(...localization.map(item => item['location']))
-//     // console.log('localization', localization, localization.length)
-//     console.log('finalNumber part2', min)
-//
-// }
-part1();
-//part2();
+function part2() {
+    localization = []
+    separat(data.slice(2))
+
+    for (let i= 0; i < seeds.length; i+=2) {
+            localization.push({'seed': +seeds[i]},{'seed': Number(seeds[i])+Number(seeds[i+1])})
+    }
+
+    console.log('localization0', localization)
+    for (let i= 0; i < separate.length; i++) {
+        transfer(separate[i], i)
+    }
+    const index = localization.findIndex(item => item['seed'] === minLocalization['seed'])
+    const howManyLoop = localization[index]['seed'] - localization[index-1]['seed']
+    for (let i= 0; i < separate.length; i++) {
+        transfer2(separate[i], i, howManyLoop, index)
+    }
+    console.log('localization', localization[index], howManyLoop);
+    console.log('minLocalization', minLocalization);
+}
+//part1();
+part2();
