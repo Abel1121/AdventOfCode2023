@@ -1,5 +1,5 @@
 const fs = require("fs");
-const input = fs.readFileSync('./test3.txt', 'utf8');
+const input = fs.readFileSync('./input.txt', 'utf8');
 const data = input.replaceAll('\r', '').split("\n");
 const regex = /(?:,|=|\(|\))/gi
 const lines = data.filter((line,index) => line !== '' && index !== 0).map(line => line.replaceAll(regex, '').split(' ').filter((item, index) => index !== 1))
@@ -19,16 +19,14 @@ function doStep(startWith,endWhen) {
     let line;
     line = finNavigate(startWith)
     results = takeNavigate(line, instruction[side]);
-    console.log('results', results, instruction[side], side)
     side = 1;
     do {
         line = finNavigate(results)
         results = takeNavigate(line, instruction[side]);
-        console.log('results', results, instruction[side], side)
 
         howManySteps += 1;
         side = side === instruction.length-1 ? 0 : side + 1;
-    } while (endWhen.includes(results));
+    } while (!endWhen.includes(results));
     return howManySteps
 }
 function part1() {
@@ -40,29 +38,39 @@ function part1() {
     console.log('finalNumber part1', howManySteps+1); //16043
 }
 
-// function part2() {
-//     const allEndedOnA = lines.filter(line => line[0][2] === 'A').map(line => line[0]);
-//     const allEndedOnZ = lines.filter(line => line[0][2] === 'Z').map(line => line[0]);
-//
-//     console.log('allEndedOnA',allEndedOnA);
-//     console.log('allEndedOnZ',allEndedOnZ);
-//
-//     let howManySteps = 0;
-//     const allEnded = [...allEndedOnZ.map(() => false)]
-//     const steps = [...allEndedOnA]
-//     console.log(allEnded, steps)
-//
-//     do {
-//         line = finNavigate(results)
-//         results = takeNavigate(line, instruction[side]);
-//         console.log('results', results, instruction[side], side)
-//
-//         howManySteps += 1;
-//         side = side === instruction.length-1 ? 0 : side + 1;
-//     } while (allEnded.every(item => item === true));
-//
-//
-//     console.log('finalNumber part2', howManySteps); //16043
-// }
-//part1();
+function part2() {
+    let currentNodes = lines.filter(line => line[0][2] === 'A').map(line => line[0]);
+
+    let stepsArray = [];
+    for (let i = 0; i < currentNodes.length; i++) {
+        let stepToReachEnd = 0;
+        let instructionIndex = 0;
+        let current = currentNodes[i];
+
+        while (!current.endsWith("Z")) {
+            if (instructionIndex === instruction.length) {
+                instructionIndex = 0;
+            }
+
+            let direction = instruction[instructionIndex]
+            current = direction === "L" ? finNavigate(current)[0][1] : finNavigate(current)[0][2];
+            stepToReachEnd++;
+            instructionIndex++;
+        }
+        stepsArray.push(stepToReachEnd);
+    }
+
+    const stepToReachEnd = stepsArray.reduce((acc, curr) => nww(acc, curr), 1);
+
+    console.log("Part 2: ", stepToReachEnd);
+}
+function gcd(a, b) {
+    if (b === 0) return a;
+    return gcd(b, a % b);
+}
+
+function nww(a, b) {
+    return (a * b) / gcd(a, b);
+}
+part1();
 part2();
